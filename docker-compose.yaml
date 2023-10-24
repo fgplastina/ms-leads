@@ -1,0 +1,58 @@
+version: '3'
+services:
+  leads-react:
+    container_name: leads-react
+    restart: always
+    build:
+      context: ./leads-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./leads-frontend:/app
+    depends_on:
+      - leads-fastapi
+
+  leads-fastapi:
+    container_name: leads-fastapi
+    restart: always
+    build:
+      context: ./leads-backend
+      dockerfile: Dockerfile
+    command:  uvicorn src.app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000 
+    env_file:
+      - ./dev/.env
+    environment:
+        DOCKER: "1"
+        DATABASE_URL: "postgresql://postgres:postgres@leads-postgresql/leads-db"
+        DATABASE_REPLICA_URL: "postgres://postgres:postgres@leads-postgresql/leads-db" 
+        DEBUG_EMAIL: $(DEBUG_EMAIL)
+    networks:
+        default:
+            aliases:
+                - www.local.com.ar
+                - www.local.com
+    ports:
+        - "8000:8000"
+        - "8888:8888"
+    volumes:
+        - ./leads-backend:/app
+    depends_on:
+      - leads-postgresql 
+    stdin_open: true
+    tty: true
+  
+  leads-postgresql:
+    container_name: leads-postgresql
+    image: postgres:latest
+    restart: always
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: leads-db 
+    volumes:
+      - ./dev/postgresql/leads-data:/var/lib/postgresql/data
+
+networks:
+    default:
+        name: leads-network

@@ -1,0 +1,9 @@
+uncommit/
+nvim
+dev/
+notes.txt
+*/node_modules/
+**/node_modules/
+env/
+*.sql
+README
