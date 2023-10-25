@@ -25,7 +25,7 @@ async def create_lead(payload: LeadSchema):
         "career_id": payload.career_id,
         "number_of_times_taken": payload.number_of_times_taken,
         "created_date": lead.created_date,
-        "courses": [course for course in courses],
+        "courses": [course.id for course in courses],
     }
     return response_object
 

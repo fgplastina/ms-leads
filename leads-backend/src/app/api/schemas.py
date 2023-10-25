@@ -12,7 +12,6 @@ class CourseDB(CourseSchema):
     id: int
 
     def as_dict(self):
-        print("LLEGOOOO")
         course_dict = {"id": self.id, "name": self.name}
         return course_dict
 
@@ -43,9 +42,9 @@ class LeadSchema(BaseModel):
     address: str
     phone: str
     inscription_year: date
-    career: str
+    career_id: int
     number_of_times_taken: int
-    courses: List[CourseDB]
+    courses: List[int]
 
 
 class LeadDB(LeadSchema):
@@ -61,10 +60,10 @@ class LeadDB(LeadSchema):
             "address": self.address,
             "phone": self.phone,
             "inscription_year": self.inscription_year.isoformat(),
-            "career": self.career,
+            "career_id": self.career_id,
             "created_date": self.created_date.isoformat(),
         }
-        lead_dict["courses"] = [course.dict() for course in self.courses]
+        lead_dict["courses"] = [course for course in self.courses]
         return lead_dict
 
 
@@ -75,9 +74,9 @@ class LeadDetailedDB(BaseModel):
     address: str
     phone: str
     inscription_year: date
-    career: CareerDB
+    career_id: int
     number_of_times_taken: int
-    courses: List[CourseDB]
+    courses: List[int]
 
     def as_dict(self):
         lead_dict = {
@@ -88,7 +87,7 @@ class LeadDetailedDB(BaseModel):
             "address": self.address,
             "phone": self.phone,
             "inscription_year": self.inscription_year.isoformat(),
-            "career": self.career,
+            "career_id": self.career_id,
         }
-        lead_dict["courses"] = [course.dict() for course in self.courses]
+        lead_dict["courses"] = [course.id for course in self.courses]
         return lead_dict

@@ -40,9 +40,7 @@ async def get_all(sort: str):
             career_id=lead_result.career_id,
             number_of_times_taken=lead_result.number_of_times_taken,
             created_date=lead_result.created_date,
-            courses=[
-                CourseDB(id=course.id, name=course.name) for course in courses_result
-            ],
+            courses=[course.id for course in courses_result],
         )
         leads_data.append(lead_data)
 
@@ -70,19 +68,19 @@ async def get(id: int):
         career_id=lead_result.career_id,
         number_of_times_taken=lead_result.number_of_times_taken,
         created_date=lead_result.created_date,
-        courses=[CourseDB(id=course.id, name=course.name) for course in courses_result],
+        courses=[course.id for course in courses_result],
     )
 
     return lead_data
 
 
 async def post(payload: LeadSchema):
-    courses = [
-        CourseSchema(
-            name=course.name,
-        )
-        for course in payload.courses
-    ]
+    #    courses = [
+    #        CourseSchema(
+    #            name=course.name,
+    #        )
+    #        for course in payload.courses
+    #    ]
 
     lead_instance = LeadSchema(
         first_name=payload.first_name,
@@ -93,7 +91,7 @@ async def post(payload: LeadSchema):
         inscription_year=payload.inscription_year,
         career_id=payload.career_id,
         number_of_times_taken=payload.number_of_times_taken,
-        courses=courses,
+        courses=payload.courses,
     )
 
     query = lead.insert().values(
@@ -110,12 +108,15 @@ async def post(payload: LeadSchema):
 
     lead_id = await database.execute(query=query)
 
-    for i in courses:
-        query_courses = course.insert().values(
+    query_courses = (
+        course.update()
+        .where(course.c.id.in_(payload.courses))
+        .values(
             lead_id=lead_id,
-            name=i.name,
         )
-        await database.execute(query=query_courses)
+    )
+
+    await database.execute(query=query_courses)
 
     course_query = course.select().where(lead_id == course.c.lead_id)
     courses = await database.fetch_all(query=course_query)
